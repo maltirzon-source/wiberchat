@@ -1,0 +1,193 @@
+{% extends 'chat/base.html' %}
+
+{% block title %}Inscription - Wiberchat{% endblock %}
+
+{% block body_style %}
+background: linear-gradient(135deg, #075e54 0%, #128c7e 100%);
+display: flex;
+align-items: center;
+justify-content: center;
+min-height: 100vh;
+padding: 20px;
+{% endblock %}
+
+{% block css %}
+<style>
+    .auth-container {
+        width: 100%;
+        max-width: 420px;
+        animation: slideUp 0.4s ease;
+    }
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .auth-card {
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(10px);
+        padding: 40px 30px;
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .logo {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    .logo i {
+        font-size: 60px;
+        color: #075e54;
+        margin-bottom: 10px;
+    }
+    .logo h2 {
+        color: #075e54;
+        font-size: 28px;
+        font-weight: 700;
+        margin: 0;
+    }
+    .logo p {
+        color: #667781;
+        font-size: 14px;
+        margin-top: 5px;
+    }
+    .form-group {
+        margin-bottom: 18px;
+        position: relative;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #111b21;
+        font-size: 14px;
+        font-weight: 600;
+    }
+    .input-wrapper {
+        position: relative;
+    }
+    .input-wrapper i {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #667781;
+        font-size: 18px;
+    }
+    input {
+        width: 100%;
+        padding: 14px 14px 14px 48px;
+        border: 2px solid #e9edef;
+        border-radius: 12px;
+        box-sizing: border-box;
+        font-size: 16px;
+        transition: all 0.3s;
+        background: #f0f2f5;
+    }
+    input:focus {
+        outline: none;
+        border-color: #00a884;
+        background: white;
+    }
+    .help-text {
+        font-size: 12px;
+        color: #8696a0;
+        margin-top: 6px;
+        padding-left: 4px;
+    }
+    .btn-submit {
+        background: linear-gradient(135deg, #00a884 0%, #008069 100%);
+        color: white;
+        border: none;
+        width: 100%;
+        padding: 16px;
+        border-radius: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        margin-top: 10px;
+        font-size: 16px;
+        box-shadow: 0 4px 15px rgba(0,168,132,0.4);
+        transition: transform 0.2s;
+    }
+    .btn-submit:active {
+        transform: scale(0.98);
+    }
+    .auth-footer {
+        text-align: center;
+        margin-top: 25px;
+        font-size: 14px;
+        color: #667781;
+    }
+    .auth-footer a {
+        color: #00a884;
+        text-decoration: none;
+        font-weight: 700;
+    }
+    .error-list {
+        background: #ffebee;
+        color: #c62828;
+        padding: 12px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        font-size: 13px;
+        border-left: 4px solid #c62828;
+    }
+    .error-list ul {
+        margin: 5px 0 0 20px;
+        padding: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="logo">
+            <i class="fas fa-user-plus"></i>
+            <h2>Créer un compte</h2>
+            <p>Rejoins Wiberchat maintenant</p>
+        </div>
+
+        {% if form.errors %}
+            <div class="error-list">
+                <strong><i class="fas fa-exclamation-triangle"></i> Erreur :</strong>
+                <ul>
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="form-group">
+                    <label>{{ field.label }}</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-{% if 'username' in field.name %}user{% elif 'password' in field.name %}lock{% else %}envelope{% endif %}"></i>
+                        {{ field }}
+                    </div>
+                    {% if field.help_text %}
+                        <div class="help-text">{{ field.help_text|safe }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn-submit">
+                S'INSCRIRE <i class="fas fa-check" style="margin-left: 8px;"></i>
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            Déjà un compte ? <a href="{% url 'login' %}">Se connecter</a>
+        </div>
+    </div>
+</div>
+
+<script>
+document.querySelectorAll('input').forEach(input => {
+    if (input.name === 'username') input.placeholder = 'Choisis un pseudo';
+    if (input.name === 'password1') input.placeholder = 'Min. 8 caractères';
+    if (input.name === 'password2') input.placeholder = 'Confirme le mot de passe';
+});
+</script>
+{% endblock %}

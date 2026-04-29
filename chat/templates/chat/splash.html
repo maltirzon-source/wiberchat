@@ -1,0 +1,103 @@
+{% extends 'chat/base.html' %}
+
+{% block title %}Wiberchat{% endblock %}
+
+{% block body_style %}
+background: linear-gradient(135deg, #075e54 0%, #128c7e 100%);
+display: flex;
+align-items: center;
+justify-content: center;
+min-height: 100vh;
+overflow: hidden;
+{% endblock %}
+
+{% block css %}
+<style>
+    .splash-container {
+        text-align: center;
+        animation: fadeIn 0.5s ease;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    .logo-circle {
+        width: 120px;
+        height: 120px;
+        background: white;
+        border-radius: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 30px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        animation: bounce 1.5s ease infinite;
+    }
+    @keyframes bounce {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    .logo-circle i {
+        font-size: 60px;
+        color: #075e54;
+    }
+    .app-name {
+        color: white;
+        font-size: 42px;
+        font-weight: 700;
+        letter-spacing: -1px;
+        margin-bottom: 10px;
+    }
+    .tagline {
+        color: rgba(255,255,255,0.8);
+        font-size: 16px;
+        margin-bottom: 40px;
+    }
+    .loader {
+        width: 50px;
+        height: 50px;
+        border: 4px solid rgba(255,255,255,0.3);
+        border-top: 4px solid white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    .version {
+        position: absolute;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: rgba(255,255,255,0.6);
+        font-size: 13px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="splash-container">
+    <div class="logo-circle">
+        <i class="fas fa-comment-dots"></i>
+    </div>
+    <h1 class="app-name">Wiberchat</h1>
+    <p class="tagline">Discutez sans limites</p>
+    <div class="loader"></div>
+</div>
+<div class="version">v1.0.0</div>
+{% endblock %}
+
+{% block js %}
+<script>
+    // Redirige après 2.5s
+    setTimeout(() => {
+        {% if user.is_authenticated %}
+            window.location.href = "{% url 'chat_list' %}";
+        {% else %}
+            window.location.href = "{% url 'login' %}";
+        {% endif %}
+    }, 2500);
+</script>
+{% endblock %}

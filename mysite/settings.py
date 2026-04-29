@@ -1,0 +1,96 @@
+import os
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# --- SÉCURITÉ ---
+SECRET_KEY = 'django-insecure-ta-cle-secrete-ici'
+DEBUG = False  # IMPORTANT: False en prod sur PythonAnywhere
+ALLOWED_HOSTS = ['Powerlin.pythonanywhere.com', 'localhost', '127.0.0.1']
+
+# --- APPLICATIONS ---
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'chat',
+]
+
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', # Pour servir les static en prod
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+ROOT_URLCONF = 'mysite.urls'
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [BASE_DIR / 'templates'],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.media',
+            ],
+        },
+    },
+]
+
+WSGI_APPLICATION = 'mysite.wsgi.application'
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+
+# --- VALIDATION DES MOTS DE PASSE ---
+AUTH_PASSWORD_VALIDATORS = []
+
+# --- INTERNATIONALISATION ---
+LANGUAGE_CODE = 'fr-fr'
+TIME_ZONE = 'Africa/Kinshasa'
+USE_I18N = True
+USE_TZ = True
+
+# --- FICHIERS STATIQUES ET MÉDIAS ---
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / 'static']  # Dossier dev avec icons/
+STATIC_ROOT = BASE_DIR / 'staticfiles'    # Dossier prod pour collectstatic
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# --- CONFIGURATION DE CONNEXION ---
+LOGIN_REDIRECT_URL = 'chat_list'
+LOGOUT_REDIRECT_URL = 'login'
+LOGIN_URL = 'login'
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# --- HTTPS & CSRF SUR PYTHONANYWHERE ---
+CSRF_TRUSTED_ORIGINS = ['https://Powerlin.pythonanywhere.com']
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = True
+
+# --- PWA ---
+X_FRAME_OPTIONS = 'SAMEORIGIN'
+
+print("Application Wiberchat stabilisée - Prête pour l'envoi instantané")

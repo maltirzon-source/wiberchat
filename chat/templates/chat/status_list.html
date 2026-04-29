@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1e40af">
+    <title>Wiberchat - Actus</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-teal: #1e40af;
+            --text-main: #111b21;
+            --text-secondary: #667781;
+            --bg-gray: #f0f2f5;
+            --white: #ffffff;
+            --accent-green: #1e40af;
+            --divider: #e9edef;
+            --poll-bg: #e3f2fd;
+            --poll-bar: #1e40af;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; }
+      .app-container { width: 100%; max-width: 500px; height: 100vh; background: var(--bg-gray); display: flex; flex-direction: column; overflow: hidden; }
+        header { background-color: var(--primary-teal); color: white; padding: 16px 0 0 0; }
+      .header-top { display: flex; justify-content: space-between; align-items: center; padding: 0 16px; margin-bottom: 15px; }
+      .brand { font-size: 22px; font-weight: 700; }
+      .header-icons { display: flex; gap: 20px; font-size: 18px; }
+      .header-icons a { color: white; text-decoration: none; }
+      .tabs { display: flex; justify-content: space-around; }
+      .tab-item { padding: 14px 12px; flex: 1; text-align: center; font-weight: 500; font-size: 13px; color: rgba(255,255,255,0.7); text-decoration: none; text-transform: uppercase; position: relative; min-width: 0; }
+      .tab-item.active { color: white; font-weight: 600; }
+      .tab-item.active::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: white; }
+      .main-scroll { flex: 1; overflow-y: auto; }
+      .status-container { background: var(--white); padding: 15px 0; border-bottom: 1px solid var(--divider); margin-bottom: 8px; }
+      .status-list { display: flex; gap: 15px; overflow-x: auto; padding: 0 15px; scrollbar-width: none; }
+      .status-list::-webkit-scrollbar { display: none; }
+      .status-item { display: flex; flex-direction: column; align-items: center; min-width: 65px; cursor: pointer; }
+      .ring { width: 58px; height: 58px; border-radius: 50%; padding: 2px; position: relative; margin-bottom: 4px; }
+      .ring.seen { border: 2px solid #d1d7db; }
+      .ring.unseen { border: 2px solid var(--primary-teal); }
+      .status-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+      .add-status-icon { position: absolute; bottom: 0; right: 0; background: var(--primary-teal); color: white; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 2px solid white; }
+      .status-item span { font-size: 11px; color: var(--text-secondary); text-align: center; }
+      .post { background: var(--white); margin-bottom: 8px; padding: 12px 0; }
+      .post-header { display: flex; align-items: center; padding: 0 12px 10px; }
+      .post-avatar { width: 40px; height: 40px; border-radius: 50%; margin-right: 10px; object-fit: cover; }
+      .post-user { font-weight: 700; font-size: 15px; color: var(--text-main); }
+      .post-time { font-size: 12px; color: var(--text-secondary); }
+      .post-text { padding: 0 12px 10px; font-size: 15px; line-height: 1.4; }
+      .post-image { width: 100%; max-height: 400px; object-fit: cover; margin-bottom: 10px; }
+      .audio-player { margin: 0 12px 10px; background: var(--bg-gray); border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 12px; }
+      .audio-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--primary-teal); color: white; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+      .audio-wave { flex: 1; height: 30px; background: repeating-linear-gradient(90deg, #ccc 0 2px, transparent 2px 4px); border-radius: 4px; }
+      .audio-time { font-size: 12px; color: var(--text-secondary); min-width: 35px; }
+      .poll-container { margin: 0 12px 10px; }
+      .poll-option { background: var(--poll-bg); border-radius: 8px; margin-bottom: 8px; position: relative; overflow: hidden; cursor: pointer; }
+      .poll-bar { position: absolute; left: 0; top: 0; bottom: 0; background: var(--poll-bar); opacity: 0.2; transition: width 0.3s; }
+      .poll-content { position: relative; padding: 12px; display: flex; justify-content: space-between; align-items: center; }
+      .poll-text { font-size: 14px; font-weight: 500; }
+      .poll-percent { font-size: 13px; font-weight: 600; color: var(--primary-teal); }
+      .poll-voted { border: 2px solid var(--primary-teal); }
+      .poll-voted.poll-bar { opacity: 0.3; }
+      .poll-total { font-size: 12px; color: var(--text-secondary); padding: 4px 12px; }
+      .post-actions { display: flex; gap: 20px; padding: 0 12px; color: var(--text-secondary); font-size: 13px; }
+      .post-actions span { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+      .post-actions span:hover { color: var(--primary-teal); }
+        footer { padding: 10px 12px; background: var(--white); border-top: 1px solid var(--divider); }
+      .type-selector { display: flex; gap: 8px; margin-bottom: 8px; }
+      .type-btn { flex: 1; padding: 8px; border: 1px solid var(--divider); background: white; border-radius: 20px; font-size: 13px; cursor: pointer; color: var(--text-secondary); }
+      .type-btn.active { background: var(--primary-teal); color: white; border-color: var(--primary-teal); font-weight: 600; }
+      .post-form { display: flex; align-items: center; gap: 10px; }
+      .input-bar { flex: 1; background: var(--bg-gray); border-radius: 20px; padding: 8px 15px; }
+      .input-bar input { border: none; background: none; width: 100%; outline: none; font-size: 15px; }
+      .send-btn { background: none; border: none; color: var(--primary-teal); font-size: 22px; cursor: pointer; }
+      .hidden { display: none; }
+      .poll-inputs { margin-top: 8px; }
+      .poll-inputs input { width: 100%; padding: 8px 12px; margin-bottom: 6px; border: 1px solid var(--divider); border-radius: 8px; font-size: 14px; }
+      .add-option { color: var(--primary-teal); font-size: 13px; cursor: pointer; padding: 6px 0; }
+      .file-preview { font-size: 12px; color: var(--primary-teal); padding: 4px 12px; }
+      .progress-bar { width: 100%; height: 3px; background: var(--divider); border-radius: 2px; margin-top: 4px; display: none; }
+      .progress-fill { height: 100%; background: var(--primary-teal); width: 0%; transition: width 0.3s; border-radius: 2px; }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <header>
+        <div class="header-top">
+            <div class="brand">Wiberchat</div>
+            <div class="header-icons">
+                <i class="fas fa-camera"></i>
+                <i class="fas fa-search"></i>
+                <a href="{% url 'profile' %}"><i class="fas fa-user-circle"></i></a>
+                <i class="fas fa-ellipsis-v"></i>
+            </div>
+        </div>
+        <div class="tabs">
+            <a href="{% url 'chat_list' %}" class="tab-item">Clavardage</a>
+            <a href="{% url 'status_list' %}" class="tab-item active">Actus</a>
+            <div class="tab-item">Appels</div>
+            <div class="tab-item">Wi Business</div>
+        </div>
+    </header>
+
+    <div class="main-scroll">
+        <div class="status-container">
+            <div class="status-list">
+                <div class="status-item" onclick="document.getElementById('typeText').click()">
+                    <div class="ring unseen">
+                        {% if user.profile.image %}
+                            <img src="{{ user.profile.image.url }}" class="status-img">
+                        {% else %}
+                            <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=1e40af&color=fff" class="status-img">
+                        {% endif %}
+                        <div class="add-status-icon"><i class="fas fa-plus"></i></div>
+                    </div>
+                    <span>Mon actu</span>
+                </div>
+            </div>
+        </div>
+
+        {% for post in posts %}
+        <div class="post">
+            <div class="post-header">
+                {% if post.user.profile.image %}
+                    <img src="{{ post.user.profile.image.url }}" class="post-avatar">
+                {% else %}
+                    <img src="https://ui-avatars.com/api/?name={{ post.user.username }}&background=1e40af&color=fff" class="post-avatar">
+                {% endif %}
+                <div>
+                    <div class="post-user">{{ post.user.username }}</div>
+                    <div class="post-time">{{ post.date_pub|timesince }}</div>
+                </div>
+            </div>
+
+            {% if post.type == 'text' and post.contenu %}
+                <div class="post-text">{{ post.contenu }}</div>
+            {% endif %}
+
+            {% if post.type == 'image' and post.image %}
+                <img src="{{ post.image.url }}" class="post-image">
+                {% if post.contenu %}<div class="post-text">{{ post.contenu }}</div>{% endif %}
+            {% endif %}
+
+            {% if post.type == 'audio' and post.audio %}
+                <div class="audio-player">
+                    <button class="audio-btn" onclick="toggleAudio(this, '{{ post.audio.url }}')">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <div class="audio-wave"></div>
+                    <div class="audio-time">0:00</div>
+                </div>
+                {% if post.contenu %}<div class="post-text">{{ post.contenu }}</div>{% endif %}
+            {% endif %}
+
+            {% if post.type == 'poll' %}
+                <div class="poll-container">
+                    {% if post.contenu %}<div class="post-text">{{ post.contenu }}</div>{% endif %}
+                    {% for option in post.options.all %}
+                        <a href="{% url 'vote_sondage' option.id %}" style="text-decoration:none; color:inherit;">
+                            <div class="poll-option {% if user in option.votes.all %}poll-voted{% endif %}">
+                                <div class="poll-bar" style="width: {% widthratio option.total_votes post.total_views 100 %}%"></div>
+                                <div class="poll-content">
+                                    <span class="poll-text">{{ option.texte }}</span>
+                                    <span class="poll-percent">{% widthratio option.total_votes post.total_views 100 %}%</span>
+                                </div>
+                            </div>
+                        </a>
+                    {% endfor %}
+                    <div class="poll-total">{{ post.total_views }} vue{{ post.total_views|pluralize }}</div>
+                </div>
+            {% endif %}
+
+            <div class="post-actions">
+                <span onclick="location.href='{% url 'like_statut' post.id %}'">
+                    <i class="fas fa-heart" style="color:{% if user in post.likes.all %}#f15c6d{% endif %}"></i>
+                    {{ post.total_likes }}
+                </span>
+                <span><i class="fas fa-eye"></i> {{ post.total_views }}</span>
+            </div>
+        </div>
+        {% empty %}
+        <p style="text-align:center; color:var(--text-secondary); padding:40px 20px;">Aucune actualité pour le moment.<br>Sois le premier à poster!</p>
+        {% endfor %}
+    </div>
+
+    <footer>
+        <form method="POST" enctype="multipart/form-data" id="statusForm">
+            {% csrf_token %}
+            <div class="type-selector">
+                <button type="button" class="type-btn active" id="typeText" onclick="setType('text')">Texte</button>
+                <button type="button" class="type-btn" onclick="setType('image')">Image</button>
+                <button type="button" class="type-btn" onclick="setType('audio')">Audio</button>
+                <button type="button" class="type-btn" onclick="setType('poll')">Sondage</button>
+            </div>
+            <input type="hidden" name="type" id="statusType" value="text">
+
+            <div id="textInput">
+                <div class="post-form">
+                    <div class="input-bar">
+                        <input type="text" name="content" placeholder="Quoi de neuf?">
+                    </div>
+                    <button type="submit" class="send-btn"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+
+            <div id="imageInput" class="hidden">
+                <div class="post-form">
+                    <label for="imageFile" style="color:var(--primary-teal); font-size:22px; cursor:pointer;"><i class="fas fa-image"></i></label>
+                    <input type="file" id="imageFile" name="image" accept="image/*" style="display:none;" onchange="showFileName(this)">
+                    <div class="input-bar">
+                        <input type="text" name="content" placeholder="Légende...">
+                    </div>
+                    <button type="submit" class="send-btn"><i class="fas fa-paper-plane"></i></button>
+                </div>
+                <div class="file-preview" id="imagePreview"></div>
+                <div class="progress-bar" id="imageProgress"><div class="progress-fill"></div></div>
+            </div>
+
+            <div id="audioInput" class="hidden">
+                <div class="post-form">
+                    <label for="audioFile" style="color:var(--primary-teal); font-size:22px; cursor:pointer;"><i class="fas fa-microphone"></i></label>
+                    <input type="file" id="audioFile" name="audio" accept="audio/*" style="display:none;" onchange="showFileName(this)">
+                    <div class="input-bar">
+                        <input type="text" name="content" placeholder="Description audio...">
+                    </div>
+                    <button type="submit" class="send-btn"><i class="fas fa-paper-plane"></i></button>
+                </div>
+                <div class="file-preview" id="audioPreview"></div>
+                <div class="progress-bar" id="audioProgress"><div class="progress-fill"></div></div>
+            </div>
+
+            <div id="pollInput" class="hidden">
+                <div class="input-bar" style="margin-bottom:8px;">
+                    <input type="text" name="content" placeholder="Pose ta question...">
+                </div>
+                <div class="poll-inputs" id="pollOptions">
+                    <input type="text" name="poll_options[]" placeholder="Option 1" required>
+                    <input type="text" name="poll_options[]" placeholder="Option 2" required>
+                </div>
+                <div class="add-option" onclick="addPollOption()"><i class="fas fa-plus"></i> Ajouter une option</div>
+                <button type="submit" class="send-btn" style="width:100%; margin-top:8px; background:var(--primary-teal); color:white; border-radius:20px; padding:10px; font-size:15px;">
+                    Publier le sondage
+                </button>
+            </div>
+        </form>
+    </footer>
+</div>
+
+<script>
+let currentAudio = null;
+
+function setType(type) {
+    document.getElementById('statusType').value = type;
+    document.querySelectorAll('.type-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+
+    document.querySelectorAll('#statusForm input').forEach(input => {
+        if (input.type!== 'hidden' && input.name!== 'csrfmiddlewaretoken') {
+            input.disabled = true;
+        }
+    });
+
+    ['textInput', 'imageInput', 'audioInput', 'pollInput'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+    });
+
+    const activeSection = document.getElementById(type + 'Input');
+    activeSection.classList.remove('hidden');
+    activeSection.querySelectorAll('input').forEach(input => {
+        input.disabled = false;
+    });
+}
+
+function showFileName(input) {
+    const type = input.name;
+    const preview = document.getElementById(type + 'Preview');
+    if (input.files.length > 0) {
+        preview.textContent = '✓ ' + input.files[0].name;
+    }
+}
+
+function addPollOption() {
+    const container = document.getElementById('pollOptions');
+    const count = container.children.length + 1;
+    if (count <= 4) {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.name = 'poll_options[]';
+        input.placeholder = `Option ${count}`;
+        container.appendChild(input);
+    }
+}
+
+function toggleAudio(btn, url) {
+    if (currentAudio &&!currentAudio.paused) {
+        currentAudio.pause();
+        document.querySelectorAll('.audio-btn i').forEach(i => i.className = 'fas fa-play');
+    }
+    if (!btn.audio) {
+        btn.audio = new Audio(url);
+        currentAudio = btn.audio;
+        btn.audio.addEventListener('ended', () => {
+            btn.querySelector('i').className = 'fas fa-play';
+        });
+    }
+    if (btn.audio.paused) {
+        btn.audio.play();
+        btn.querySelector('i').className = 'fas fa-pause';
+    } else {
+        btn.audio.pause();
+        btn.querySelector('i').className = 'fas fa-play';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    setType('text');
+});
+
+document.getElementById('statusForm').addEventListener('submit', function(e) {
+    const type = document.getElementById('statusType').value;
+    if (type === 'image' || type === 'audio') {
+        const fileInput = document.getElementById(type + 'File');
+        if (!fileInput.files.length) {
+            e.preventDefault();
+            alert('Sélectionne un fichier d\'abord');
+            return;
+        }
+
+        e.preventDefault();
+        const formData = new FormData(this);
+        const progressBar = document.getElementById(type + 'Progress');
+        const progressFill = progressBar.querySelector('.progress-fill');
+        progressBar.style.display = 'block';
+
+        const xhr = new XMLHttpRequest();
+        xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable) {
+                const percent = (e.loaded / e.total) * 100;
+                progressFill.style.width = percent + '%';
+            }
+        });
+        xhr.addEventListener('load', () => {
+            if (xhr.status === 200 || xhr.status === 302) {
+                window.location.reload();
+            } else {
+                alert('Erreur upload');
+                progressBar.style.display = 'none';
+            }
+        });
+        xhr.open('POST', '');
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        xhr.send(formData);
+    }
+});
+</script>
+
+</body>
+</html>

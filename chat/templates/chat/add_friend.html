@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ajouter un contact - Wiberchat</title>
+    <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            background: #075e54;
+            color: white;
+            padding: 15px;
+            width: 100%;
+            font-size: 1.1em;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-link { color: white; text-decoration: none; font-size: 1.5em; }
+
+        .container {
+            width: 90%;
+            max-width: 400px;
+            margin-top: 30px;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .icon-box {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+
+        h2 { margin: 0 0 10px 0; color: #128c7e; font-size: 1.2em; }
+        p { color: #666; font-size: 0.9em; margin-bottom: 20px; }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            outline: none;
+        }
+
+        input[type="text"]:focus { border-color: #25d366; }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #25d366;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        button:active { transform: scale(0.98); }
+
+        /* Messages d'erreur ou de succès */
+        .messages {
+            list-style: none;
+            padding: 0;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        .message {
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        .error { background-color: #ffebee; color: #c62828; border: 1px solid #ef9a9a; }
+        .success { background-color: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="{% url 'chat_list' %}" class="back-link">←</a>
+        <span>Nouveau contact</span>
+    </header>
+
+    <div class="container">
+        <div class="icon-box">🔍</div>
+        <h2>Détection Réseau</h2>
+        <p>Entrez le nom d'utilisateur de la personne que vous souhaitez ajouter à vos contacts.</p>
+
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li class="message {{ message.tags }}">{{ message.message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            <input type="text" name="username" placeholder="Ex: Joseph243" required autofocus>
+            <button type="submit">RECHERCHER ET AJOUTER</button>
+        </form>
+    </div>
+
+</body>
+</html>

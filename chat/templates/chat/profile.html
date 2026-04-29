@@ -1,0 +1,181 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mon Profil - Wiberchat</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f0f2f5; display: flex; justify-content: center; height: 100vh; }
+
+        .app-container { width: 100%; max-width: 500px; display: flex; flex-direction: column; height: 100%; background: white; }
+
+        header {
+            background: #075e54; color: white; padding: 15px;
+            display: flex; align-items: center; font-size: 1.2em;
+        }
+
+        .back-btn { color: white; text-decoration: none; margin-right: 15px; font-size: 1.2em; }
+
+        .profile-content { flex: 1; padding: 30px 20px; text-align: center; overflow-y: auto; }
+
+        .avatar-container { position: relative; display: inline-block; margin-bottom: 20px; }
+
+        .profile-img {
+            width: 180px; height: 180px; border-radius: 50%;
+            object-fit: cover; border: 4px solid #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .user-name { font-size: 1.5em; font-weight: bold; color: #111; margin-bottom: 5px; }
+        .user-status { color: #666; margin-bottom: 30px; }
+
+        .upload-section {
+            background: #f8f9fa; padding: 20px; border-radius: 15px;
+            border: 1px dashed #ccc;
+        }
+
+        .file-input { margin-bottom: 15px; width: 100%; }
+
+        .save-btn {
+            background: #008069; color: white; border: none;
+            padding: 12px 30px; border-radius: 25px; font-weight: bold;
+            cursor: pointer; width: 100%; font-size: 1em;
+        }
+
+        nav.bottom-nav {
+            height: 65px; background: white; display: flex;
+            justify-content: space-around; align-items: center;
+            border-top: 1px solid #ddd; width: 100%;
+        }
+
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center;
+            color: #54656f; text-decoration: none; font-size: 0.75em;
+        }
+        .nav-item.active { color: #008069; font-weight: bold; }
+        .icon { font-size: 1.5em; margin-bottom: 2px; }
+
+        .logout-btn {
+            background: white;
+            color: #d32f2f;
+            border: 1px solid #d32f2f;
+            padding: 12px;
+            border-radius: 8px;
+            width: 100%;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+        .logout-btn:active {
+            background: #ffebee;
+        }
+
+        .download-section {
+            background: #e8f5e9;
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid #4caf50;
+            margin-top: 20px;
+        }
+        .download-btn {
+            display: inline-block;
+            background: #4caf50;
+            color: white;
+            padding: 14px 28px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1em;
+            width: 100%;
+        }
+        .download-btn:active {
+            background: #45a049;
+        }
+        .download-info {
+            font-size: 12px;
+            color: #2e7d32;
+            margin-top: 10px;
+        }
+    </style>
+
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#075e54">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Wiberchat">
+
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/static/service-worker.js')
+            .then(reg => console.log('Wiberchat PWA Prête !'))
+            .catch(err => console.log('Erreur PWA:', err));
+        });
+      }
+    </script>
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <a href="{% url 'chat_list' %}" class="back-btn">←</a>
+            <span>Profil</span>
+        </header>
+
+        <div class="profile-content">
+            <div class="avatar-container">
+                <img src="{{ profile.image.url }}" class="profile-img">
+            </div>
+
+            <div class="user-name">{{ profile.user.username }}</div>
+            <div class="user-status">Membre de Wiberchat</div>
+
+            <div class="upload-section">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <p style="font-size: 0.9em; color: #555;">Changer ma photo de profil</p>
+                    <input type="file" name="image" class="file-input" accept="image/*" required>
+                    <button type="submit" class="save-btn">ENREGISTRER</button>
+                </form>
+            </div>
+
+            <div class="download-section">
+                <p style="font-size: 0.95em; color: #1b5e20; margin-bottom: 12px; font-weight: 600;">
+                    📱 Installe l'application Android
+                </p>
+                <a href="{% static 'app/wiberchat.apk' %}" download class="download-btn">
+                    ⬇ Télécharger Wiberchat APK
+                </a>
+                <p class="download-info">
+                    Version 1.0 • Android 8.0+ • 15 MB<br>
+                    Active "Sources inconnues" pour installer
+                </p>
+            </div>
+
+            <div style="margin-top: 20px; padding: 0 10px;">
+                <form action="{% url 'logout' %}" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="logout-btn">SE DÉCONNECTER</button>
+                </form>
+            </div>
+        </div>
+
+        <nav class="bottom-nav">
+            <a href="{% url 'chat_list' %}" class="nav-item">
+                <span class="icon">💬</span>
+                <span>Discussions</span>
+            </a>
+            <a href="{% url 'status_list' %}" class="nav-item">
+                <span class="icon">⭕</span>
+                <span>Statut</span>
+            </a>
+            <a href="{% url 'profile' %}" class="nav-item active">
+                <span class="icon">👤</span>
+                <span>Profil</span>
+            </a>
+        </nav>
+    </div>
+</body>
+</html>

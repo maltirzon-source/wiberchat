@@ -1,0 +1,288 @@
+{% extends 'chat/base.html' %}
+
+{% block title %}Chat avec {{ other_user.username }}{% endblock %}
+
+{% block css %}
+<style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+        background-color: #e5ddd5;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        display: flex;
+        flex-direction: column;
+    }
+    header {
+        background: #075e54;
+        color: white;
+        padding: 10px 15px;
+        display: flex;
+        align-items: center;
+        height: 60px;
+        flex-shrink: 0;
+    }
+.header-avatar {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        margin-right: 10px;
+        object-fit: cover;
+    }
+.header-info { flex: 1; }
+.header-name { font-weight: 600; font-size: 17px; }
+.header-status { font-size: 12px; opacity: 0.8; }
+.chat-container {
+        flex: 1;
+        overflow-y: auto;
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        -webkit-overflow-scrolling: touch;
+    }
+.message {
+        max-width: 85%;
+        padding: 8px 12px;
+        border-radius: 10px;
+        font-size: 16px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        word-wrap: break-word;
+        position: relative;
+    }
+.sent { align-self: flex-end; background-color: #dcf8c6; }
+.received { align-self: flex-start; background-color: #ffffff; }
+.message img,.message video {
+        max-width: 100%;
+        border-radius: 8px;
+        margin-top: 5px;
+    }
+.message-info {
+        font-size: 11px;
+        color: #667781;
+        text-align: right;
+        margin-top: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 6px;
+    }
+.ticks {
+        font-size: 14px;
+        letter-spacing: -3px;
+    }
+.ticks.delivered { color: #667781; }
+.ticks.read { color: #53bdeb; }
+.ticks.pending { color: #667781; }
+.delete-btn {
+        color: #ff4d4d;
+        text-decoration: none;
+        opacity: 0.6;
+        font-size: 12px;
+    }
+.delete-btn:hover { opacity: 1; }
+.footer-fixed {
+        background: transparent;
+        padding: 10px;
+        padding-bottom: 25px;
+        flex-shrink: 0;
+    }
+.modern-capsule {
+        background: #1a1a1a;
+        border-radius: 25px;
+        padding: 12px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        box-shadow: 0 -2px 15px rgba(0,0,0,0.3);
+    }
+.input-row input {
+        width: 100%;
+        background: transparent;
+        border: none;
+        color: #ffffff;
+        font-size: 17px;
+        outline: none;
+        padding: 5px 0;
+    }
+.tools-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-top: 1px solid #333;
+        padding-top: 8px;
+    }
+.left-tools { display: flex; align-items: center; gap: 20px; }
+.tool-btn { color: #b0b0b0; font-size: 22px; cursor: pointer; }
+.right-tools { display: flex; align-items: center; gap: 12px; }
+.send-btn { background: none; border: none; color: #ffffff; font-size: 20px; cursor: pointer; }
+.hidden-file { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<header>
+    <a href="{% url 'chat_list' %}" style="color:white; text-decoration:none; margin-right:10px; font-size: 20px;">←</a>
+    <img src="{% if other_user.profile.image %}{{ other_user.profile.image.url }}{% else %}https://ui-avatars.com/api/?name={{ other_user.username }}&background=075e54&color=fff{% endif %}" class="header-avatar">
+    <div class="header-info">
+        <div class="header-name">{{ other_user.username }}</div>
+        <div class="header-status">
+            {% if other_user.profile.is_online %}en ligne{% else %}vu {{ other_user.profile.last_seen|timesince }}{% endif %}
+        </div>
+    </div>
+</header>
+
+<div class="chat-container" id="chat-window">
+    {% for msg in messages %}
+        <div class="message {% if msg.sender == request.user %}sent{% else %}received{% endif %}" id="msg-{{ msg.id }}">
+            {% if msg.content %}{{ msg.content }}{% endif %}
+            {% if msg.image %}<img src="{{ msg.image.url }}" alt="image">{% endif %}
+            {% if msg.file %}<a href="{{ msg.file.url }}" style="color:#53bdeb">📎 {{ msg.file.name }}</a>{% endif %}
+
+            <div class="message-info">
+                {{ msg.timestamp|date:"H:i" }}
+                {% if msg.sender == request.user %}
+                    <a href="{% url 'delete_message' msg.pk %}"
+                       onclick="return confirm('Supprimer ce message?')"
+                       class="delete-btn">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                    {% if msg.is_read %}
+                        <span class="ticks read">✔✔</span>
+                    {% elif msg.is_delivered %}
+                        <span class="ticks delivered">✔✔</span>
+                    {% else %}
+                        <span class="ticks">✔</span>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<div class="footer-fixed">
+    <form method="POST" enctype="multipart/form-data" id="msg-form">
+        {% csrf_token %}
+        <div class="modern-capsule">
+            <div class="input-row">
+                <input type="text" name="content" placeholder="Message" id="msg-input" autocomplete="off">
+            </div>
+            <div class="tools-row">
+                <div class="left-tools">
+                    <label class="tool-btn"><i class="fas fa-image"></i><input type="file" name="image" class="hidden-file" accept="image/*"></label>
+                    <label class="tool-btn"><i class="fas fa-paperclip"></i><input type="file" name="file" class="hidden-file"></label>
+                </div>
+                <div class="right-tools">
+                    <button type="submit" class="send-btn"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+    const chatWindow = document.getElementById('chat-window');
+    const roomUsername = '{{ other_user.username }}';
+    const csrfToken = '{{ csrf_token }}';
+    const currentUser = '{{ request.user.username }}';
+
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+
+    // IndexedDB pour offline
+    let db;
+    const request = indexedDB.open('WiberchatDB', 1);
+    request.onupgradeneeded = e => {
+      db = e.target.result;
+      if (!db.objectStoreNames.contains('outbox')) {
+        db.createObjectStore('outbox', { keyPath: 'id', autoIncrement: true });
+      }
+    };
+    request.onsuccess = e => { db = e.target.result; };
+
+    // Envoi message avec fallback offline
+    document.getElementById('msg-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const content = document.getElementById('msg-input').value.trim();
+      if (!content) return;
+
+      const tempId = Date.now();
+      const msgData = {
+        receiver: roomUsername,
+        content: content,
+        timestamp: new Date().toISOString()
+      };
+
+      // 1. Affiche direct avec horloge
+      appendMessage({
+        id: tempId,
+        content: content,
+        sender: currentUser,
+        status: 'pending',
+        time: new Date().toLocaleTimeString().slice(0,5)
+      });
+
+      document.getElementById('msg-input').value = '';
+
+      // 2. Essaie d'envoyer
+      try {
+        const res = await fetch('/api/send-message/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+          body: JSON.stringify(msgData)
+        });
+        if (res.ok) {
+          const data = await res.json();
+          updateMessageStatus(tempId, 'sent', data.id);
+        } else {
+          throw new Error('Network');
+        }
+      } catch (err) {
+        // 3. Si offline: stocke + demande Background Sync
+        const tx = db.transaction('outbox', 'readwrite');
+        tx.objectStore('outbox').add({ id: tempId, data: msgData, csrf: csrfToken });
+
+        const registration = await navigator.serviceWorker.ready;
+        if ('sync' in registration) {
+          await registration.sync.register('sync-messages');
+        }
+      }
+    });
+
+    function appendMessage(msg) {
+      const div = document.createElement('div');
+      div.id = 'msg-' + msg.id;
+      div.className = 'message sent';
+      div.innerHTML = `
+        <div class="content">${msg.content}</div>
+        <div class="message-info">
+          <span class="time">${msg.time}</span>
+          <i class="fas fa-clock ticks pending"></i>
+        </div>
+      `;
+      chatWindow.appendChild(div);
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    function updateMessageStatus(tempId, status, realId) {
+      const msgDiv = document.getElementById('msg-' + tempId);
+      if (!msgDiv) return;
+
+      const icon = msgDiv.querySelector('.ticks');
+      if (status === 'sent') {
+        icon.className = 'fas fa-check ticks delivered';
+        msgDiv.id = 'msg-' + realId;
+      }
+    }
+
+    // Écoute le SW quand le message est vraiment envoyé
+    navigator.serviceWorker.addEventListener('message', event => {
+      if (event.data.type === 'SYNCED') {
+        updateMessageStatus(event.data.id, 'sent', event.data.realId);
+      }
+    });
+</script>
+{% endblock %}
