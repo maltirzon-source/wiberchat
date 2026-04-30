@@ -1,0 +1,8 @@
+*.pyc
+*~
+__pycache__/
+db.sqlite3
+.envoi.py.swp
+envoi.py
+push_github.py
+.DS_Store
