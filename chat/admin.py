@@ -1,17 +1,5 @@
 from django.contrib import admin
-from .models import Profile, Statut, Message
-
-# --- CONFIGURATION DU PROFIL ---
-@admin.register(Profile)
-class ProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'last_seen', 'is_online_status')
-    search_fields = ('user__username',)
-    list_filter = ('last_seen',)
-
-    def is_online_status(self, obj):
-        return obj.is_online()
-    is_online_status.boolean = True  # Affiche une coche verte/rouge pour le statut en ligne
-    is_online_status.short_description = 'En ligne'
+from .models import Statut, Message
 
 # --- CONFIGURATION DES MESSAGES ---
 @admin.register(Message)

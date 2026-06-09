@@ -3,20 +3,6 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 import datetime
 
-class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    image = models.ImageField(default='default.jpg', upload_to='profile_pics')
-    last_seen = models.DateTimeField(default=timezone.now)
-
-    def is_online(self):
-        if self.last_seen:
-            return self.last_seen > timezone.now() - datetime.timedelta(minutes=5)
-        return False
-
-    def __str__(self):
-        return f"Profil de {self.user.username}"
-
-
 class Statut(models.Model):
     TYPE_CHOICES = [
         ('text', 'Texte'),
@@ -56,7 +42,6 @@ class Statut(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.get_type_display()} - {self.date_pub.strftime('%d/%m/%Y %H:%M')}"
 
-
 class SondageOption(models.Model):
     statut = models.ForeignKey(Statut, on_delete=models.CASCADE, related_name='options')
     texte = models.CharField(max_length=100)
@@ -67,7 +52,6 @@ class SondageOption(models.Model):
 
     def __str__(self):
         return f"{self.texte} - {self.total_votes()} votes"
-
 
 class Message(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
@@ -84,7 +68,6 @@ class Message(models.Model):
 
     def __str__(self):
         return f"De {self.sender.username} à {self.receiver.username}"
-
 
 class PinnedChat(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='pinned_chats')

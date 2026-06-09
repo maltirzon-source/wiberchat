@@ -6,9 +6,10 @@ from django.contrib import messages
 from django.db.models import Q, OuterRef, Subquery, Count
 from django.utils import timezone
 from django.http import JsonResponse
+from accounts.models import Profile
 from django.views.decorators.csrf import csrf_exempt
 import json
-from .models import Message, Statut, Profile, PinnedChat, SondageOption
+from .models import Message, Statut, PinnedChat, SondageOption
 
 def signup(request):
     if request.method == 'POST':
@@ -207,13 +208,19 @@ def like_statut(request, pk):
 
 @login_required
 def profile(request):
+    # On importe le modèle ici, localement, pour casser la boucle
+    from accounts.models import Profile
+
     user_profile, created = Profile.objects.get_or_create(user=request.user)
+
     if request.method == 'POST':
         if request.FILES.get('image'):
             user_profile.image = request.FILES['image']
             user_profile.save()
-            return redirect('profile')
+            return HttpResponse(status=200)
+
     return render(request, 'chat/profile.html', {'profile': user_profile})
+
 
 @login_required
 def delete_statut(request, pk):
