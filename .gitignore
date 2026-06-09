@@ -6,3 +6,5 @@ db.sqlite3
 envoi.py
 push_github.py
 .DS_Store
+.env
+media/
